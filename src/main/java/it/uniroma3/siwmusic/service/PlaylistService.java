@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import it.uniroma3.siwmusic.model.Playlist;
+import it.uniroma3.siwmusic.model.User;
 import it.uniroma3.siwmusic.repository.PlaylistRepository;
 
 @Service
@@ -32,6 +33,20 @@ public class PlaylistService {
 
     public Iterable<Playlist> findAll() {
         return playlistRepository.findAll();
+    }
+    
+    public void createPlaylistForUser(User user) {
+        Playlist playlist = new Playlist();
+        playlist.setUser(user);
+        playlistRepository.save(playlist);
+    }
+
+    public Playlist getOrCreateUserPlaylist(User user) {
+        return playlistRepository.findByUser(user).orElseGet(() -> {
+            Playlist p = new Playlist();
+            p.setUser(user);
+            return playlistRepository.save(p);
+        });
     }
 
 }

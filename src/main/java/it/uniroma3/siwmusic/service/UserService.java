@@ -2,6 +2,7 @@ package it.uniroma3.siwmusic.service;
 
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -48,5 +49,9 @@ public class UserService {
     @Transactional
     public List<User> getAllUsers() {
         return (List<User>) userRepository.findAll();
-    }   
+    }
+
+	public Optional<User> findByUsername(String name) {
+		return userRepository.findByUsername(name);
+	}   
 }

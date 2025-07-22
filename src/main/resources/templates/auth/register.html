@@ -1,0 +1,127 @@
+<!-- register.html -->
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Registrazione - Siw Music</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&family=Orbitron&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0b0f2b;
+            color: white;
+            font-family: 'Roboto', serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #ffd700;
+            font-family: 'Orbitron', sans-serif;
+            text-align: center;
+        }
+
+        .form-container {
+            max-width: 400px;
+            margin: 40px auto;
+            background-color: #1a1a40;
+            padding: 30px;
+            border-radius: 10px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        button, input[type="submit"] {
+            background-color: #ffd700;
+            color: #0b0f2b;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover, input[type="submit"]:hover {
+            background-color: #e5c100;
+        }
+
+        .login-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        a {
+            color: #ffd700;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .error {
+            color: red;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Registrazione</h1>
+
+    <div class="form-container">
+
+        <!-- Messaggio di errore -->
+        <p th:if="${error}" th:text="${error}" class="error"></p>
+
+        <form th:action="@{/register}" method="post" onsubmit="return validatePasswords();">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" th:value="${user.username}" required />
+
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required />
+
+            <label for="confirmPassword">Conferma Password</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" required />
+
+            <div class="buttons">
+                <input type="submit" value="Registrati" />
+                <a th:href="@{/}"><button type="button">Annulla</button></a>
+            </div>
+        </form>
+
+        <div class="login-link">
+            <span>Hai già un account? <a th:href="@{/login}">Vai al login</a></span>
+        </div>
+    </div>
+
+    <script>
+        function validatePasswords() {
+            const pwd = document.getElementById("password").value;
+            const confirm = document.getElementById("confirmPassword").value;
+            if (pwd !== confirm) {
+                alert("Le password non coincidono.");
+                return false;
+            }
+            return true;
+        }
+    </script>
+</body>
+</html>

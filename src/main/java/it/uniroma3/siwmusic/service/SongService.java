@@ -13,7 +13,7 @@ public class SongService {
 
     @Autowired
     private SongRepository songRepository;
-
+   
     public Optional<Song> findById(Long id) {
         return songRepository.findById(id);
     }
@@ -31,7 +31,7 @@ public class SongService {
     }
 
     public Iterable<Song> findByAuthorId(Long authorId) {
-        return songRepository.findByAuthorId(authorId);
+        return songRepository.findByAuthorsId(authorId);
     }
 
     public Iterable<Song> findByAlbumName(String albumName) {

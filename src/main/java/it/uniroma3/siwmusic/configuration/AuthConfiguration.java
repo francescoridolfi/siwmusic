@@ -39,19 +39,18 @@ public class AuthConfiguration {
     protected SecurityFilterChain configure(HttpSecurity http) throws Exception{
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/", "/books/**", "/authors/**",
-                    "/login", "/register", "/css/**",
-                    "/js/**", "/images/**", "/uploads/**").permitAll()
-                .anyRequest().authenticated()
+                .anyRequest().permitAll()
             )
             .formLogin(form -> form
                 .loginPage("/login")
                 .defaultSuccessUrl("/", true)
                 .permitAll()
             )
-            .logout(logout -> logout.permitAll());
-
+            .logout(logout -> logout
+                    .logoutUrl("/logout")
+                    .logoutSuccessUrl("/")   // <--- REINDIRIZZA ALLA HOME
+                    .permitAll()
+                );
         return http.build();
     }
 }
