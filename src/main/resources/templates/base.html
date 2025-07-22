@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en"
+    xmlns="http://www.w3.org/1999/xhtml" 
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+    <head>
+        <meta charset="UTF-8">
+        <title layout:fragment="pageTitle">Siw Music</title>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto&family=Orbitron&display=swap" rel="stylesheet">
+        <link th:href="@{/main.css}" rel="stylesheet">
+    </head>
+    
+    <body>
+
+        <div class="top-bar">
+        
+            <h1>Siw Music</h1>
+            
+            <!-- Link alla playlist visibile solo se autenticato -->
+            <div sec:authorize="isAuthenticated()" style="margin-top: 10px;">
+                <a th:href="@{/user/playlist}" style="color: #ffd700; font-weight: bold; text-decoration: none;">
+                    My Playlist &#10084;
+                </a>
+            </div>
+
+            <!-- Se l'utente NON è autenticato -->
+            <div sec:authorize="!isAuthenticated()">
+                <a th:href="@{/login}"><button>Login</button></a>
+            </div>
+
+            <!-- Se l'utente è autenticato -->
+            <div class="user-info" sec:authorize="isAuthenticated()">
+                <span>
+                    <span th:text="${#authentication.name}"></span>
+                    <span sec:authorize="hasAuthority('ROLE_ADMIN')"> - admin</span>
+                </span>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit">Logout</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="container-fluid" layout:fragment="content">
+        </div>
+
+        <script th:if="${message}" src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script th:if="${message}" th:inline="javascript">
+            Swal.fire({
+                title: [[${message.title}]],
+                text: [[${message.message}]],
+                icon: [[${message.level}]],  
+                confirmButtonText: 'OK'
+            });
+        </script>
+    </body>
+</html>
+

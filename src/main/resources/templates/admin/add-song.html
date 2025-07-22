@@ -55,7 +55,7 @@
 
 <h1>Aggiungi una nuova canzone</h1>
 
-<form th:action="@{/admin/add-song}" method="post" enctype="multipart/form-data" th:object="${song}">
+<form th:action="${formActionUrl}" method="post" enctype="multipart/form-data" th:object="${song}">
     <label for="title">Titolo:</label>
     <input type="text" th:field="*{title}" required/>
     

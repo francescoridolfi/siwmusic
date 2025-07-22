@@ -18,11 +18,12 @@ import it.uniroma3.siwmusic.model.User;
 import it.uniroma3.siwmusic.service.PlaylistService;
 import it.uniroma3.siwmusic.service.SongService;
 import it.uniroma3.siwmusic.service.UserService;
+import it.uniroma3.siwmusic.utils.BaseController;
 
 
 @Controller
 @RequestMapping("/user")
-public class UserController {
+public class UserController extends BaseController {
 	
 	@Autowired
 	UserService userService;
@@ -56,9 +57,11 @@ public class UserController {
 	}
 
 	@GetMapping("/playlist")
-	@PreAuthorize("isAuthenticated()")
-	public String viewPlaylist(Model model, Principal principal) {
-	    Optional<User> userOpt = userService.findByUsername(principal.getName());
+	public String viewPlaylist(Model model) {
+        if(getUser() == null)
+            return "redirect:/";
+
+	    Optional<User> userOpt = userService.findByUsername(getUser().getUsername());
 	    if (userOpt.isPresent()) {
 	        User user = userOpt.get();
 	        Playlist playlist = playlistService.getOrCreateUserPlaylist(user);

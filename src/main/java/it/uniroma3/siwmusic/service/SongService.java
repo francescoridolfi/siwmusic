@@ -1,5 +1,6 @@
 package it.uniroma3.siwmusic.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,16 +27,16 @@ public class SongService {
         songRepository.delete(song);
     }
 
-    public Iterable<Song> findAll() {
-        return songRepository.findAll(); 
+    public List<Song> findAll() {
+        return (List<Song>) songRepository.findAll(); 
     }
 
-    public Iterable<Song> findByAuthorId(Long authorId) {
-        return songRepository.findByAuthorsId(authorId);
+    public List<Song> findByAuthorId(Long authorId) {
+        return (List<Song>)  songRepository.findByAuthorsId(authorId);
     }
 
-    public Iterable<Song> findByAlbumName(String albumName) {
-        return songRepository.findByAlbumName(albumName);
+    public List<Song> findByAlbumName(String albumName) {
+        return (List<Song>)  songRepository.findByAlbumName(albumName);
     }
     
     public Iterable<Song> findByGenre(String genre) {

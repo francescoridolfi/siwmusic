@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -15,23 +16,24 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import it.uniroma3.siwmusic.model.Author;
 import it.uniroma3.siwmusic.model.Song;
+import it.uniroma3.siwmusic.model.User;
+import it.uniroma3.siwmusic.model.enums.Role;
 import it.uniroma3.siwmusic.service.AuthorService;
 import it.uniroma3.siwmusic.service.SongService;
+import it.uniroma3.siwmusic.utils.BaseController;
 
 @Controller
 @RequestMapping("/admin")
-public class AdminController {
+public class AdminController extends BaseController {
 	@Autowired
     private SongService songService;
     @Autowired
     private AuthorService authorService;
 
-    public AdminController(SongService songService) {
-        this.songService = songService;
-    }
 
     @Value("${siwbooks.upload.dir}")
     private String uploadDir;
@@ -39,17 +41,50 @@ public class AdminController {
     @GetMapping("/add-song")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public String showAddSongForm(Model model) {
+        User user = getUser();
+        if(user == null || !user.getRole().equals(Role.ROLE_ADMIN))
+            return "redirect:/";
+
         model.addAttribute("song", new Song());
+        model.addAttribute("formActionUrl", "/admin/add-song");
+        model.addAttribute("authors", authorService.findAll());
+        return "admin/add-song";
+    }
+
+    @GetMapping("/edit-song/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public String showEditSongForm(
+        @PathVariable Long id,
+        RedirectAttributes redirectAttributes,
+        Model model
+    ) {
+        User user = getUser();
+        if(user == null || !user.getRole().equals(Role.ROLE_ADMIN))
+            return "redirect:/";
+
+        Song song = songService.findById(id).orElse(null);
+
+        if(song == null)
+            return redirectWithError("Error", "Song not found", redirectAttributes, "redirect:/");
+
+        model.addAttribute("song", song);
+        model.addAttribute("formActionUrl", "/admin/edit-song/" + id);
         model.addAttribute("authors", authorService.findAll());
         return "admin/add-song";
     }
 
     @PostMapping("/add-song")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public String addSong(@ModelAttribute("song") Song song,
-                          @RequestParam("audioFile") MultipartFile audioFile,
-                          @RequestParam("coverImage") MultipartFile coverImage,
-                          @RequestParam("authors") List<Long> authorIds) throws IOException {
+    public String addSong(
+        @ModelAttribute("song") Song song,
+        @RequestParam("audioFile") MultipartFile audioFile,
+        @RequestParam("coverImage") MultipartFile coverImage,
+        @RequestParam("authors") List<Long> authorIds
+    ) throws IOException {
+
+        User user = getUser();
+        if(user == null || !user.getRole().equals(Role.ROLE_ADMIN))
+            return "redirect:/";
 
         // Salva file audio
         String audioFileName = System.currentTimeMillis() + "_" + audioFile.getOriginalFilename();
@@ -66,7 +101,7 @@ public class AdminController {
         song.setCoverImagePath("images/" + imageFileName);
         
         Iterable<Author> iterableAuthors = authorService.findAllById(authorIds);
-        Set<Author> selectedAuthors = new HashSet<>();
+        List<Author> selectedAuthors = new ArrayList<>();
         iterableAuthors.forEach(selectedAuthors::add);
         song.setAuthors(selectedAuthors);
 
@@ -75,10 +110,63 @@ public class AdminController {
         songService.save(song);
         return "redirect:/";
     }
+
+    @PostMapping("/edit-song/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public String editSong(
+        @PathVariable Long id,
+        @ModelAttribute("song") Song songForm,
+        @RequestParam("audioFile") MultipartFile audioFile,
+        @RequestParam("coverImage") MultipartFile coverImage,
+        @RequestParam("authors") List<Long> authorIds,
+        RedirectAttributes redirectAttributes
+    ) throws IOException {
+        User user = getUser();
+        if(user == null || !user.getRole().equals(Role.ROLE_ADMIN))
+            return "redirect:/";
+
+
+        Song song = songService.findById(id).orElse(null);
+
+        if(song == null)
+            return redirectWithError("Error", "Song not found", redirectAttributes, "redirect:/");
+
+         // Salva file audio
+        String audioFileName = System.currentTimeMillis() + "_" + audioFile.getOriginalFilename();
+        Path audioPath = Paths.get(uploadDir + "/audio/" + audioFileName);
+        Files.createDirectories(audioPath.getParent());
+        Files.write(audioPath, audioFile.getBytes());
+        song.setFilePath("audio/" + audioFileName);
+
+        // Salva immagine copertina
+        String imageFileName = System.currentTimeMillis() + "_" + coverImage.getOriginalFilename();
+        Path imagePath = Paths.get(uploadDir + "/images/" + imageFileName);
+        Files.createDirectories(imagePath.getParent());
+        Files.write(imagePath, coverImage.getBytes());
+        song.setCoverImagePath("images/" + imageFileName);
+        
+        Iterable<Author> iterableAuthors = authorService.findAllById(authorIds);
+        List<Author> selectedAuthors = new ArrayList<>();
+        iterableAuthors.forEach(selectedAuthors::add);
+        song.setAuthors(selectedAuthors);
+
+        song.setTitle(songForm.getTitle());
+        song.setGenre(songForm.getGenre());
+        song.setAlbumName(songForm.getAlbumName());
+        song.setReleaseDate(songForm.getReleaseDate());
+    
+        songService.save(song);
+        return "redirect:/";
+    }
     
     @GetMapping("/add-author")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public String showAddAuthorForm(Model model) {
+        User user = getUser();
+        if(user == null || !user.getRole().equals(Role.ROLE_ADMIN))
+            return "redirect:/";
+
+
         model.addAttribute("author", new Author());
         return "admin/add-author";
     }
@@ -86,6 +174,11 @@ public class AdminController {
     @PostMapping("/add-author")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public String addAuthor(@ModelAttribute Author author) {
+        User user = getUser();
+        if(user == null || !user.getRole().equals(Role.ROLE_ADMIN))
+            return "redirect:/";
+
+            
         authorService.save(author);
         return "redirect:/admin/add-song";
     }

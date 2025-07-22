@@ -3,6 +3,7 @@ package it.uniroma3.siwmusic.controller;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,40 +21,39 @@ import it.uniroma3.siwmusic.model.User;
 import it.uniroma3.siwmusic.service.PlaylistService;
 import it.uniroma3.siwmusic.service.SongService;
 import it.uniroma3.siwmusic.service.UserService;
+import it.uniroma3.siwmusic.utils.BaseController;
 
 @Controller
-public class HomeController {
+public class HomeController extends BaseController {
 
     @Autowired
     private SongService songService;
-    @Autowired
-    private UserService userService;
+
     @Autowired
     private PlaylistService playlistService;
 
     @GetMapping("/")
-    public String home(Model model, Principal principal) {
-    	List<Song> songs = new ArrayList<>();
-    	songService.findAll().forEach(songs::add);
+    public String home(Model model) {
+        List<Song> songs = songService.findAll();
+
+        for (Song s : songs) {
+            s.getAuthors().size();
+        }
         model.addAttribute("songs", songs);
 
-        if (principal != null) {
-        	Optional<User> userOpt = userService.findByUsername(principal.getName());
-        	if (userOpt.isPresent()) {
-        	    User user = userOpt.get();
-        	    Playlist playlist = playlistService.getOrCreateUserPlaylist(user);
-        	    Set<Long> songIdsInPlaylist = playlist.getSongs().stream().map(Song::getId).collect(Collectors.toSet());
+        Map<Long, Boolean> inPlaylistMap = new HashMap<>();
+        User user = getUser();
 
-        	    Map<Long, Boolean> inPlaylistMap = new HashMap<>();
-        	    for (Song s : songs) {
-        	        inPlaylistMap.put(s.getId(), songIdsInPlaylist.contains(s.getId()));
-        	    }
-
-        	    model.addAttribute("inPlaylistMap", inPlaylistMap);
-        	}
-
+        if (user != null) {
+            Playlist playlist = playlistService.getOrCreateUserPlaylist(user);
+            Set<Song> playlistSongs = new HashSet<>(playlist.getSongs());
+            for (Song s : songs) {
+                inPlaylistMap.put(s.getId(), playlistSongs.contains(s));
+                
+            }
         }
 
+        model.addAttribute("inPlaylistMap", inPlaylistMap);
         return "home";
     }
 

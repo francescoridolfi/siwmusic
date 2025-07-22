@@ -21,28 +21,6 @@ public class Author {
     
     @ManyToMany(mappedBy = "authors")
     private Set<Song> songs = new HashSet<>();
-
-    
-    // Getters & setters
-    
-	public Long getId() {
-		return id;
-	}
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
-	public Set<Song> getSongs() {
-		return songs;
-	}
-	public void setSongs(Set<Song> songs) {
-		this.songs = songs;
-	}
-	public void setId(Long id) {
-		this.id = id;
-	}
     
 }
 

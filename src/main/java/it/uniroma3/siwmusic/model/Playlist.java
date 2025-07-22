@@ -35,33 +35,5 @@ public class Playlist{
         inverseJoinColumns = @JoinColumn(name = "song_id")
     )
     private Set<Song> songs = new HashSet<>();
-
-    
-    // Getters & setters
-    
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public User getUser() {
-		return user;
-	}
-
-	public void setUser(User user) {
-		this.user = user;
-	}
-
-	public Set<Song> getSongs() {
-		return songs;
-	}
-
-	public void setSongs(Set<Song> songs) {
-		this.songs = songs;
-	}
-    
     
 }
