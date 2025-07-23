@@ -23,8 +23,12 @@ import it.uniroma3.siwmusic.model.Song;
 import it.uniroma3.siwmusic.model.User;
 import it.uniroma3.siwmusic.model.enums.Role;
 import it.uniroma3.siwmusic.service.AuthorService;
+import it.uniroma3.siwmusic.service.PlaylistService;
 import it.uniroma3.siwmusic.service.SongService;
 import it.uniroma3.siwmusic.utils.BaseController;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @Controller
 @RequestMapping("/admin")
@@ -33,13 +37,14 @@ public class AdminController extends BaseController {
     private SongService songService;
     @Autowired
     private AuthorService authorService;
+    @Autowired
+    private PlaylistService playlistService;
 
 
     @Value("${siwbooks.upload.dir}")
     private String uploadDir;
 
     @GetMapping("/add-song")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public String showAddSongForm(Model model) {
         User user = getUser();
         if(user == null || !user.getRole().equals(Role.ROLE_ADMIN))
@@ -47,12 +52,12 @@ public class AdminController extends BaseController {
 
         model.addAttribute("song", new Song());
         model.addAttribute("formActionUrl", "/admin/add-song");
+        model.addAttribute("isEditing", false);
         model.addAttribute("authors", authorService.findAll());
         return "admin/add-song";
     }
 
     @GetMapping("/edit-song/{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public String showEditSongForm(
         @PathVariable Long id,
         RedirectAttributes redirectAttributes,
@@ -69,17 +74,18 @@ public class AdminController extends BaseController {
 
         model.addAttribute("song", song);
         model.addAttribute("formActionUrl", "/admin/edit-song/" + id);
+        model.addAttribute("isEditing", true);
         model.addAttribute("authors", authorService.findAll());
         return "admin/add-song";
     }
 
     @PostMapping("/add-song")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public String addSong(
         @ModelAttribute("song") Song song,
         @RequestParam("audioFile") MultipartFile audioFile,
         @RequestParam("coverImage") MultipartFile coverImage,
-        @RequestParam("authors") List<Long> authorIds
+        @RequestParam("authors") List<Long> authorIds,
+        RedirectAttributes redirectAttributes
     ) throws IOException {
 
         User user = getUser();
@@ -108,11 +114,10 @@ public class AdminController extends BaseController {
 
 
         songService.save(song);
-        return "redirect:/";
+        return redirectWithSuccess("Success", "Song created successfully", redirectAttributes, "redirect:/");
     }
 
     @PostMapping("/edit-song/{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public String editSong(
         @PathVariable Long id,
         @ModelAttribute("song") Song songForm,
@@ -156,11 +161,10 @@ public class AdminController extends BaseController {
         song.setReleaseDate(songForm.getReleaseDate());
     
         songService.save(song);
-        return "redirect:/";
+        return redirectWithSuccess("Success", "Song edited successfully", redirectAttributes, "redirect:/admin/edit-song/" + id);
     }
     
     @GetMapping("/add-author")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public String showAddAuthorForm(Model model) {
         User user = getUser();
         if(user == null || !user.getRole().equals(Role.ROLE_ADMIN))
@@ -168,19 +172,109 @@ public class AdminController extends BaseController {
 
 
         model.addAttribute("author", new Author());
+        model.addAttribute("isEditing", false);
+        model.addAttribute("formActionUrl", "/admin/add-author");
         return "admin/add-author";
     }
 
     @PostMapping("/add-author")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public String addAuthor(@ModelAttribute Author author) {
+    public String addAuthor(
+        @ModelAttribute Author author,
+        @RequestHeader String referer,
+        RedirectAttributes redirectAttributes
+    ) {
         User user = getUser();
         if(user == null || !user.getRole().equals(Role.ROLE_ADMIN))
             return "redirect:/";
 
             
         authorService.save(author);
-        return "redirect:/admin/add-song";
+
+        return redirectWithSuccess("Success", "Author created successfully", redirectAttributes, "redirect:" + referer);
     }
+
+    @GetMapping("/edit-author/{id}")
+    public String showEditAuthorForm(
+        @PathVariable Long id,
+        RedirectAttributes redirectAttributes,
+        Model model
+    ) {
+        User user = getUser();
+        if(user == null || !user.getRole().equals(Role.ROLE_ADMIN))
+            return "redirect:/";
+
+        Author author = authorService.findById(id).orElse(null);
+        if(author == null)
+            return redirectWithError("Error", "Author not found", redirectAttributes, "redirect:/");
+
+        model.addAttribute("author", author);
+        model.addAttribute("isEditing", true);
+        model.addAttribute("formActionUrl", "/admin/edit-author/" + id);
+        return "admin/add-author";
+    }
+
+    @PostMapping("/edit-author/{id}")
+    public String addEditAuthor(
+        @PathVariable Long id,
+        RedirectAttributes redirectAttributes,
+        @ModelAttribute Author authorForm
+    ) {
+        User user = getUser();
+        if(user == null || !user.getRole().equals(Role.ROLE_ADMIN))
+            return "redirect:/";
+
+        Author author = authorService.findById(id).orElse(null);
+        if(author == null)
+            return redirectWithError("Error", "Author not found", redirectAttributes, "redirect:/");
+
+        
+        author.setName(authorForm.getName());
+
+        authorService.save(author);
+        return redirectWithSuccess("Success", "Author updated successfully", redirectAttributes, "redirect:/admin/edit-song/" + id);
+    }
+
+    @GetMapping("/delete-song/{id}")
+    public String deleteSong(
+        @PathVariable Long id,
+        RedirectAttributes redirectAttributes
+    ) {
+        
+        User user = getUser();
+
+        if(user == null || !user.getRole().equals(Role.ROLE_ADMIN))
+            return "redirect:/";
+
+        Song song = songService.findById(id).orElse(null);
+        if(song == null)
+            return redirectWithError("Error", "Song not found", redirectAttributes, "redirect:/");
+
+        playlistService.removeSongFromAllPlaylists(song);
+        songService.delete(song);
+
+        return redirectWithSuccess("Success", "Song deleted successfully", redirectAttributes, "redirect:/");
+    }
+
+    @GetMapping("/delete-author/{id}")
+    public String deleteAuthor(
+        @PathVariable Long id,
+        RedirectAttributes redirectAttributes
+    ) {
+        
+        User user = getUser();
+
+        if(user == null || !user.getRole().equals(Role.ROLE_ADMIN))
+            return "redirect:/";
+
+        Author author = authorService.findById(id).orElse(null);
+        if(author == null)
+            return redirectWithError("Error", "Author not found", redirectAttributes, "redirect:/");
+
+        songService.removeAllSongFromAuthor(author);
+        authorService.delete(author);
+
+        return redirectWithSuccess("Success", "Author deleted successfully", redirectAttributes, "redirect:/");
+    }
+    
 
 }

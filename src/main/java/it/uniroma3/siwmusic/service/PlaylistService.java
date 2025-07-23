@@ -1,11 +1,15 @@
 package it.uniroma3.siwmusic.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import it.uniroma3.siwmusic.model.Playlist;
+import it.uniroma3.siwmusic.model.Song;
 import it.uniroma3.siwmusic.model.User;
 import it.uniroma3.siwmusic.repository.PlaylistRepository;
 
@@ -47,6 +51,16 @@ public class PlaylistService {
             p.setUser(user);
             return playlistRepository.save(p);
         });
+    }
+
+    @Transactional
+    public void removeSongFromAllPlaylists(Song song) {
+        ArrayList<Playlist> playlists = (ArrayList<Playlist>) playlistRepository.findAll();
+        for (Playlist playlist : playlists) {
+            if (playlist.getSongs().remove(song)) {
+                playlistRepository.save(playlist);
+            }
+        }
     }
 
 }

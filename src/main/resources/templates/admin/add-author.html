@@ -67,16 +67,21 @@
 <body>
 
     <div class="top-bar">
-        <h1>Aggiungi Autore</h1>
-        <a th:href="@{/admin/add-song}"><button>Annulla</button></a>
+        <h1 th:if="${!isEditing}">Add a new author</h1>
+        <h1 th:if="${isEditing}">Edit an author</h1>
+        <a th:href="@{/}"><button>Cancel</button></a>
+        <a th:if="${isEditing}" th:href="@{/admin/delete-author/{id}(id=${author.id})}"><button style="background-color:red;color:white">Delete</button></a>
     </div>
 
-    <form th:action="@{/admin/add-author}" method="post" th:object="${author}">
-        <label for="name">Nome</label>
+    <form th:action="${formActionUrl}" method="post" th:object="${author}">
+        <label for="name">Author Name</label>
         <input type="text" th:field="*{name}" required />
 
-        <input type="submit" value="Aggiungi Autore" />
+        <input type="submit" value="Save" />
+        
     </form>
+
+    
 
 </body>
 </html>

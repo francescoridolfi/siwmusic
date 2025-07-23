@@ -3,7 +3,7 @@
 <html lang="it" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Login - Siw Music</title>
+    <title>Siw Music | Log in</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto&family=Orbitron&display=swap" rel="stylesheet">
     <style>
         body {
@@ -81,7 +81,7 @@
     <h1>Login</h1>
     
     <p th:if="${param.success}" style="color: lightgreen; text-align: center;">
-	    Registrazione avvenuta con successo. Effettua il login.
+	    Registered successfully, log-in with your credentials
 	</p>
     
 
@@ -89,7 +89,7 @@
 
         <!-- Mostra errore se login fallito -->
 		<p th:if="${param.error != null}" style="color: red; text-align: center;">
-		    Credenziali errate. Riprova.
+		    Wrong credentials, try again.
 		</p>
 
 
@@ -101,13 +101,13 @@
             <input type="password" id="password" name="password" required />
 
             <div class="buttons">
-                <input type="submit" value="Accedi" />
-                <a th:href="@{/}"><button type="button">Annulla</button></a>
+                <input type="submit" value="Login" />
+                <a th:href="@{/}"><button type="button">Cancel</button></a>
             </div>
         </form>
 
         <div class="register-link">
-            <span>Non hai un account? <a th:href="@{/register}">Registrati</a></span>
+            <span>Don't have an account? <a th:href="@{/register}">Register</a></span>
         </div>
     </div>
 </body>

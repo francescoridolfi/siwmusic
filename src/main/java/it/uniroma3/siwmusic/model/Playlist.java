@@ -1,6 +1,8 @@
 package it.uniroma3.siwmusic.model;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import jakarta.persistence.Entity;
@@ -34,6 +36,6 @@ public class Playlist{
         joinColumns = @JoinColumn(name = "playlist_id"),
         inverseJoinColumns = @JoinColumn(name = "song_id")
     )
-    private Set<Song> songs = new HashSet<>();
+    private List<Song> songs = new ArrayList<>();
     
 }

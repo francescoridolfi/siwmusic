@@ -2,15 +2,18 @@ package it.uniroma3.siwmusic.controller;
 
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
+import org.hibernate.mapping.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import it.uniroma3.siwmusic.model.Playlist;
 import it.uniroma3.siwmusic.model.Song;
@@ -33,43 +36,60 @@ public class UserController extends BaseController {
 	SongService songService;
 
 	@PostMapping("/playlist/toggle")
-	public String toggleSongInPlaylist(@RequestParam("songId") Long songId, Principal principal,
-			@RequestHeader("referer") String referer) {
-	    Optional<User> userOpt = userService.findByUsername(principal.getName());
-	    Optional<Song> songOpt = songService.findById(songId);
+	public String toggleSongInPlaylist(
+        @RequestParam("songId") Long songId,
+        Principal principal,
+		@RequestHeader("referer") String referer,
+        RedirectAttributes redirectAttributes
+    ) {
+        referer = "redirect:" + referer;
 
-	    if (userOpt.isPresent() && songOpt.isPresent()) {
-	        User user = userOpt.get();
-	        Song song = songOpt.get();
+        User user = getUser();
+        if(user == null) {
+            return redirectWithError(
+                "Error",
+                "You must login in order to manage your playlist",
+                redirectAttributes,
+                referer
+            );
+        }
+        
+        
+	    Song song = songService.findById(songId).orElse(null);
 
-	        Playlist playlist = playlistService.getOrCreateUserPlaylist(user);
+        if(song == null) {
+            return redirectWithError(
+                "Error",
+                "Song not found",
+                redirectAttributes,
+                referer
+            );
+        }
 
-	        if (playlist.getSongs().contains(song)) {
-	            playlist.getSongs().remove(song);
-	        } else {
-	            playlist.getSongs().add(song);
-	        }
+        Playlist playlist = playlistService.getOrCreateUserPlaylist(user);
 
-	        playlistService.save(playlist);
-	    }
+        if (playlist.getSongs().contains(song)) {
+            playlist.getSongs().remove(song);
+        } else {
+            playlist.getSongs().add(song);
+        }
 
-	    return "redirect:" + referer;
+        playlistService.save(playlist);
+
+	    return referer;
 	}
 
 	@GetMapping("/playlist")
 	public String viewPlaylist(Model model) {
-        if(getUser() == null)
+
+        User user = getUser();
+
+        if(user == null)
             return "redirect:/";
 
-	    Optional<User> userOpt = userService.findByUsername(getUser().getUsername());
-	    if (userOpt.isPresent()) {
-	        User user = userOpt.get();
-	        Playlist playlist = playlistService.getOrCreateUserPlaylist(user);
-	        Set<Song> songs = playlist.getSongs();
-	        model.addAttribute("songs", songs);
-	    } else {
-	        model.addAttribute("songs", Collections.emptyList());
-	    }
+        Playlist playlist = playlistService.getOrCreateUserPlaylist(user);
+        ArrayList<Song> songs = new ArrayList<>(playlist.getSongs());
+        model.addAttribute("songs", songs);
 	    return "user/my-playlist";
 	}
 

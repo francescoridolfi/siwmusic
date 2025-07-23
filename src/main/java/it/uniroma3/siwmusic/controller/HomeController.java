@@ -46,7 +46,7 @@ public class HomeController extends BaseController {
 
         if (user != null) {
             Playlist playlist = playlistService.getOrCreateUserPlaylist(user);
-            Set<Song> playlistSongs = new HashSet<>(playlist.getSongs());
+            ArrayList<Song> playlistSongs = new ArrayList<>(playlist.getSongs());
             for (Song s : songs) {
                 inPlaylistMap.put(s.getId(), playlistSongs.contains(s));
                 

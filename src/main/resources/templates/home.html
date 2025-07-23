@@ -9,45 +9,51 @@
     <body>
         <div class="container-fluid" layout:fragment="content">
 
-            <!-- Tasto 'Aggiungi Canzone' visibile solo agli admin -->
-            <div sec:authorize="hasAuthority('ROLE_ADMIN')" style="margin-top: 20px;">
-                <a th:href="@{/admin/add-song}">
-                    <button>Add Song</button>
-                </a>
+            <div class="row mb-5">
+                <div class="col col-xl-8 offset-xl-2 text-center">
+                    <h1>Here you can find all songs in archive:</h1>
+                </div>
             </div>
 
-            <div class="song-list">
-                <p th:if="${songs.size() == 0}" style="color: lightgray; text-align: center;">
-                    No song found in archive.
-                </p>
+            <div class="row">
+                <div class="col col-xl-8 offset-xl-2">
+                    <p th:if="${songs.size() == 0}" style="color: lightgray; text-align: center;">
+                        No song found in archive.
+                    </p>
 
-                <!-- Canzoni -->
-                <div class="song-card" th:each="song : ${songs}">
-                    <img th:src="@{'/uploads/' + ${song.coverImagePath}}" alt="Copertina">
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-3 justify-content-center">
+                        <div class="col" th:each="song : ${songs}">
+                            <div class="card shadow-sm">
+                                <img th:src="@{'/uploads/' + ${song.coverImagePath}}" alt="thumbnail" style="max-height:350px;">
+                                <div class="card-body">
+                                    <p class="card-text">
+                                        <div class="audio-player">
+                                            <audio controls th:src="@{'/uploads/' + ${song.filePath}}"></audio>
+                                        </div>
 
-                    <div class="song-title" th:text="${song.title}">Titolo</div>
+                                        <br>
 
-                    <div class="audio-player">
-                        <audio controls th:src="@{'/uploads/' + ${song.filePath}}"></audio>
-                    </div>
-
-                    <div class="authors">
-                        <span th:each="author : ${song.authors}">
-                            <span th:text="${author.name} "></span>
-                        </span>
-                    </div>
-
-                    <!-- Aggiungi/Rimuovi dalla playlist (solo per utenti autenticati) -->
-                    <div sec:authorize="isAuthenticated()" style="margin-top: 10px;">
-                        <form th:action="@{/user/playlist/toggle}" method="post">
-                            <input type="hidden" name="songId" th:value="${song.id}" />
-                            <button type="submit" style="background: none; border: none; cursor: pointer; font-size: 1.5em;">
-                                <span th:if="${inPlaylistMap[song.id]}" style="color: red;">&#10084;</span> <!-- Cuore pieno -->
-                                <span th:unless="${inPlaylistMap[song.id]}" style="color: white;">&#9825;</span> <!-- Cuore vuoto -->
-                            </button>
-                        </form>
-
-                        <a th:href="@{/admin/edit-song/{id}(id=${song.id})}">Edit</a>
+                                        <h3 th:text="${song.title}">Title</h3>
+                                        <span><b th:each="author : ${song.authors}" th:text="${author.name} "></b></span>
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="btn-group" sec:authorize="isAuthenticated()">
+                                            <form th:action="@{/user/playlist/toggle}" method="post" class="form-inline">
+                                                <input type="hidden" name="songId" th:value="${song.id}" />
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                                    <span th:if="${inPlaylistMap[song.id]}" style="color: red;">&#10084;</span> <!-- Cuore pieno -->
+                                                    <span th:unless="${inPlaylistMap[song.id]}" style="color: white;">&#9825;</span> <!-- Cuore vuoto -->
+                                                </button>
+                                            </form>
+                                            <a th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" th:href="@{/admin/edit-song/{id}(id=${song.id})}" class="btn btn-sm btn-outline-secondary">
+                                                Edit
+                                            </a>
+                                        </div>
+                                        <small class="text-body-secondary" th:text="${song.releaseDate}">release date</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

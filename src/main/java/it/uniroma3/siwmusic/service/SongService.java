@@ -1,11 +1,14 @@
 package it.uniroma3.siwmusic.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import it.uniroma3.siwmusic.model.Author;
 import it.uniroma3.siwmusic.model.Song;
 import it.uniroma3.siwmusic.repository.SongRepository;
 
@@ -42,5 +45,15 @@ public class SongService {
     public Iterable<Song> findByGenre(String genre) {
         return songRepository.findByGenre(genre);
     }   
+
+    @Transactional
+    public void removeAllSongFromAuthor(Author author) {
+        ArrayList<Song> list = new ArrayList<>(findAll());
+        for(Song song : list) {
+            if(song.getAuthors().contains(author)) {
+                delete(song);
+            }
+        }
+    }
 
 }

@@ -53,41 +53,44 @@
 </head>
 <body>
 
-<h1>Aggiungi una nuova canzone</h1>
+<h1 th:if="${!isEditing}">Add a new song</h1>
+<h1 th:if="${isEditing}">Edit a song</h1>
 
 <form th:action="${formActionUrl}" method="post" enctype="multipart/form-data" th:object="${song}">
-    <label for="title">Titolo:</label>
+    <label for="title">Title:</label>
     <input type="text" th:field="*{title}" required/>
     
-    <label>Autori:</label>
+    <label>Authors:</label>
 	<div th:each="author : ${authors}">
 	    <label>
 	        <input type="checkbox" name="authors" th:value="${author.id}" />
 	        <span th:text="${author.name}"></span>
+            <a th:href="@{/admin/edit-author/{id}(id=${author.id})}" style="color: #ffd700; font-size: 0.9em;">Edit</a>
 	    </label>
 	</div>
 	
-	<a th:href="@{/admin/add-author}" style="color: #ffd700; font-size: 0.9em;">Aggiungi nuovo autore</a>
+	<a th:href="@{/admin/add-author}" style="color: #ffd700; font-size: 0.9em;">Add a new author</a>
 
 
 
-    <label for="genre">Genere:</label>
+    <label for="genre">Genre:</label>
     <input type="text" th:field="*{genre}" required/>
 
     <label for="albumName">Album:</label>
     <input type="text" th:field="*{albumName}"/>
 
-    <label for="releaseDate">Data di rilascio:</label>
+    <label for="releaseDate">Release Date:</label>
     <input type="date" th:field="*{releaseDate}" required/>
 
     <label for="audioFile">File audio:</label>
     <input type="file" name="audioFile" accept="audio/*" required/>
 
-    <label for="coverImage">Copertina:</label>
+    <label for="coverImage">Thumbnail:</label>
     <input type="file" name="coverImage" accept="image/*" required/>
 
-    <button type="submit">Salva</button>
-    <a th:href="@{/}"><button type="button">Annulla</button></a>
+    <button type="submit">Save</button>
+    <a th:href="@{/}"><button type="button">Cancel</button></a>
+    <a th:if="${isEditing}" th:href="@{/admin/delete-song/{id}(id=${song.id})}"><button style="background-color:red;color:white" type="button">Delete</button></a>
 </form>
 
 </body>

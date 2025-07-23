@@ -3,7 +3,7 @@
 <html lang="it" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Registrazione - Siw Music</title>
+    <title>Siw Music | Sign in</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto&family=Orbitron&display=swap" rel="stylesheet">
     <style>
         body {
@@ -84,7 +84,7 @@
     </style>
 </head>
 <body>
-    <h1>Registrazione</h1>
+    <h1>Sign-in</h1>
 
     <div class="form-container">
 
@@ -98,17 +98,17 @@
             <label for="password">Password</label>
             <input type="password" id="password" name="password" required />
 
-            <label for="confirmPassword">Conferma Password</label>
+            <label for="confirmPassword">Confirm Password</label>
             <input type="password" id="confirmPassword" name="confirmPassword" required />
 
             <div class="buttons">
-                <input type="submit" value="Registrati" />
-                <a th:href="@{/}"><button type="button">Annulla</button></a>
+                <input type="submit" value="Register" />
+                <a th:href="@{/}"><button type="button">Cancel</button></a>
             </div>
         </form>
 
         <div class="login-link">
-            <span>Hai già un account? <a th:href="@{/login}">Vai al login</a></span>
+            <span>Already have an account? <a th:href="@{/login}">Login</a></span>
         </div>
     </div>
 
@@ -117,7 +117,7 @@
             const pwd = document.getElementById("password").value;
             const confirm = document.getElementById("confirmPassword").value;
             if (pwd !== confirm) {
-                alert("Le password non coincidono.");
+                alert("Password mismatch.");
                 return false;
             }
             return true;
