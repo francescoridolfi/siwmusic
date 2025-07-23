@@ -1,14 +1,9 @@
 package it.uniroma3.siwmusic.controller;
 
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -20,7 +15,6 @@ import it.uniroma3.siwmusic.model.Song;
 import it.uniroma3.siwmusic.model.User;
 import it.uniroma3.siwmusic.service.PlaylistService;
 import it.uniroma3.siwmusic.service.SongService;
-import it.uniroma3.siwmusic.service.UserService;
 import it.uniroma3.siwmusic.utils.BaseController;
 
 @Controller
